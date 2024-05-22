@@ -58,6 +58,13 @@ const CourseContentMedia = ({
   const [reviewId, setReviewId] = useState("");
   const [isReviewReply, setIsReviewReply] = useState(false);
 
+  const traditionalQuizzes = data[activeContent.index].quizzes.filter(
+    (quiz) => quiz.category === "traditional"
+  );
+  const dragAndDropQuizzes = data[activeContent.index].quizzes.filter(
+    (quiz) => quiz.category === "fill-in-the-blanks"
+  );
+
   const [
     addNewQuestion,
     { isSuccess, error, isLoading: questionCreationLoading },
@@ -265,12 +272,20 @@ const CourseContentMedia = ({
               {data[activeContent.index].title}
             </h1>
           </>
-        ) : (
+        ) : activeContent.type === "traditional" ? (
           <QuizWrapper
-            quiz={data[activeContent.index].quizzes}
+            quiz={traditionalQuizzes}
             setActiveContent={setActiveContent}
             nextContent={nextContent}
           />
+        ) : activeContent.type === "dragndrop" ? (
+          <QuizWrapper
+            quiz={dragAndDropQuizzes}
+            setActiveContent={setActiveContent}
+            nextContent={nextContent}
+          />
+        ) : (
+          <div></div>
         )}
         <br />
         <div className="w-full p-4 flex items-center justify-between bg-slate-500 bg-opacity-20 backdrop-blur shadow-[bg-slate-700] rounded shadow-inner">

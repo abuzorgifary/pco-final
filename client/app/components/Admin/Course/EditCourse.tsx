@@ -53,7 +53,12 @@ const EditCourse:FC<Props> = ({id}) => {
       })
       setBenefits(editCourseData.benefits);
       setPrerequisites(editCourseData.prerequisites);
-      setCourseContentData(editCourseData.courseData);
+      setCourseContentData(
+        editCourseData.courseData.map((content: any) => ({
+          ...content,
+          quizzes: content.quizzes || [],
+        }))
+      );
     }
   }, [editCourseData]);
 
@@ -185,7 +190,7 @@ const EditCourse:FC<Props> = ({id}) => {
         )}
       </div>
       <div className="w-[20%] mt-[100px] h-screen fixed z-[-1] top-18 right-0">
-        <CourseOptions active={active} setActive={setActive}  />
+        <CourseOptions active={active} setActive={setActive} />
       </div>
     </div>
   );

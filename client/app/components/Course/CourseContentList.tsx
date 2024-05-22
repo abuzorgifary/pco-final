@@ -1,6 +1,8 @@
 import React, { FC, useState } from "react";
 import { BsChevronDown, BsChevronUp } from "react-icons/bs";
 import { MdOutlineOndemandVideo } from "react-icons/md";
+import { RiDragDropFill } from "react-icons/ri";
+import { VscChecklist } from "react-icons/vsc";
 
 type Props = {
   data: any;
@@ -138,7 +140,7 @@ const CourseContentList: FC<Props> = (props) => {
                       </div>
                       <div
                         className={`w-full ${
-                          props.activeContent.type === "quiz"
+                          props.activeContent.type === "traditional"
                             ? "bg-slate-800"
                             : ""
                         } cursor-pointer transition-all p-2`}
@@ -147,14 +149,37 @@ const CourseContentList: FC<Props> = (props) => {
                           props.isDemo
                             ? null
                             : props?.setActiveContent({
-                                type: "quiz",
+                                type: "traditional",
                                 index: sectionIndex,
                               })
                         }
                       >
                         <h1 className="text-[18px] inline-block break-words text-black dark:text-white">
                           {" "}
-                          Quiz{" "}
+                          <VscChecklist className="inline-block text-2xl text-cyan-500" />{" "}
+                          Quiz Practice{" "}
+                        </h1>
+                      </div>
+                      <div
+                        className={`w-full ${
+                          props.activeContent.type === "dragndrop"
+                            ? "bg-slate-800"
+                            : ""
+                        } cursor-pointer transition-all p-2`}
+                        key={sectionIndex}
+                        onClick={() =>
+                          props.isDemo
+                            ? null
+                            : props?.setActiveContent({
+                                type: "dragndrop",
+                                index: sectionIndex,
+                              })
+                        }
+                      >
+                        <h1 className="text-[18px] inline-block break-words text-black dark:text-white">
+                          {" "}
+                          <RiDragDropFill className="inline-block text-2xl text-cyan-500" />{" "}
+                          Drag n Drop{" "}
                         </h1>
                       </div>
                     </>

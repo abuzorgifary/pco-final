@@ -5,7 +5,6 @@ import CourseOptions from "./CourseOptions";
 import CourseData from "./CourseData";
 import CourseContent from "./CourseContent";
 import CoursePreview from "./CoursePreview";
-import QuizData from "./QuizData";
 import { useCreateCourseMutation } from "../../../../redux/features/courses/coursesApi";
 import { toast } from "react-hot-toast";
 import { redirect } from "next/navigation";
@@ -57,6 +56,12 @@ const CreateCourse = (props: Props) => {
         },
       ],
       suggestion: "",
+      quizzes: [
+        {
+          question: "",
+          options: [{ text: "", isCorrect: false }],
+        },
+      ],
     },
   ]);
 
@@ -155,25 +160,18 @@ const CreateCourse = (props: Props) => {
         )}
 
         {active === 2 && (
-          <QuizData
-            quizzes={quizzes}
-            setQuizzes={setQuizzes}
-            active={active}
-            setActive={setActive}
-          />
-        )}
-
-        {active === 3 && (
           <CourseContent
             active={active}
             setActive={setActive}
             courseContentData={courseContentData}
             setCourseContentData={setCourseContentData}
             handleSubmit={handleSubmit}
+            quizzes={quizzes}
+            setQuizzes={setQuizzes}
           />
         )}
 
-        {active === 4 && (
+        {active === 3 && (
           <CoursePreview
             active={active}
             setActive={setActive}
