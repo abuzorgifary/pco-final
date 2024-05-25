@@ -17,11 +17,15 @@ type Props = {
   handleSubmit: any;
   quizzes: {
     question: string;
+    thumbnail: string;
+    category: string;
     options: { text: string; isCorrect: boolean }[];
   }[];
   setQuizzes: (
     quizzes: {
       question: string;
+      thumbnail: string;
+      category: string;
       options: { text: string; isCorrect: boolean }[];
     }[]
   ) => void;
@@ -41,9 +45,19 @@ const CourseContent: FC<Props> = ({
   );
 
   const [activeSection, setActiveSection] = useState(1);
+  const [dragging, setDragging] = useState(false);
+  const [quizCategory, setQuizCategory] = useState("traditional");
+  const [blankCount, setBlankCount] = useState(0);
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+
+    const updatedQuizzes = quizzes.map((quiz) => ({
+      ...quiz,
+      category: quizCategory,
+    }));
+
+    setQuizzes(updatedQuizzes);
   };
 
   const handleCollapseToggle = (index: number) => {
@@ -142,12 +156,20 @@ const CourseContent: FC<Props> = ({
     }
   };
 
-  const handleQuizChange = (index: number, value: any) => {
-    const updatedQuizzes = [...quizzes];
-    updatedQuizzes[index].question = value;
-    setQuizzes(updatedQuizzes);
-    console.log("QuestionChange", quizzes);
+  const handleQuizChange = (index: number, quizIndex: number, value: any) => {
+    const updatedCourseContentData = [...courseContentData];
+    updatedCourseContentData[index].quizzes[quizIndex].question = value;
+    setCourseContentData(updatedCourseContentData);
   };
+
+  const handleAddBlank = (e: any, quizIndex: number) => {
+    e.preventDefault();
+    const quizzesCopy = [...quizzes];
+    quizzesCopy[quizIndex].question += ` {blank${blankCount}}`;
+    setQuizzes(quizzesCopy);
+    setBlankCount(blankCount + 1);
+  };
+
   const handleOptionChange = (
     quizIndex: number,
     optionIndex: number,
@@ -172,8 +194,14 @@ const CourseContent: FC<Props> = ({
   const handleAddQuiz = () => {
     setQuizzes([
       ...quizzes,
-      { question: "", options: [{ text: "", isCorrect: false }] },
+      {
+        question: "",
+        thumbnail: "",
+        category: "",
+        options: [{ text: "", isCorrect: false }],
+      },
     ]);
+    setBlankCount(0);
   };
 
   const handleRemoveQuiz = (quizIndex: number) => {
@@ -181,10 +209,69 @@ const CourseContent: FC<Props> = ({
     setQuizzes(updatedQuizzes);
   };
 
+  const handleFileChange = (e: any, quizIndex: number) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = (e: any) => {
+        if (reader.readyState === 2) {
+          // Create a copy of the quizzes state
+          const quizzesCopy = [...quizzes];
+
+          // Check if reader.result is a string before assigning it to thumbnail
+          if (typeof reader.result === "string") {
+            quizzesCopy[quizIndex].thumbnail = reader.result;
+          }
+
+          // Update the quizzes state
+          setQuizzes(quizzesCopy);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDragOver = (e: any) => {
+    e.preventDefault();
+    setDragging(true);
+  };
+
+  const handleDragLeave = (e: any) => {
+    e.preventDefault();
+    setDragging(false);
+  };
+
+  const handleDrop = (e: any, quizIndex: number) => {
+    e.preventDefault();
+    setDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = (e: any) => {
+        if (typeof reader.result === "string") {
+          // Create a copy of the quizzes state
+          const quizzesCopy = [...quizzes];
+
+          // Update the thumbnail of the specific quiz
+          quizzesCopy[quizIndex].thumbnail = reader.result;
+
+          // Update the quizzes state
+          setQuizzes(quizzesCopy);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="w-[80%] m-auto mt-24 p-3">
       <form onSubmit={handleSubmit}>
         {courseContentData?.map((item: any, index: number) => {
+          console.log(item);
           const showSectionInput =
             index === 0 ||
             item.videoSection !== courseContentData[index - 1].videoSection;
@@ -394,81 +481,259 @@ const CourseContent: FC<Props> = ({
                   </div>
                 )}
                 <div>
-                  <label
-                    className={`${styles.label} text-[20px]`}
-                    htmlFor="email"
-                  >
-                    {" "}
-                    What are the quizzes for this course?{" "}
-                  </label>
+                  <div className="w-[50%] mt-5">
+                    <label className={`${styles.label} w-[50%]`}>
+                      Course Categories
+                    </label>
+                    <select
+                      name=""
+                      id=""
+                      className={`${styles.input}`}
+                      value={quizCategory}
+                      onChange={(e) => setQuizCategory(e.target.value)}
+                    >
+                      <option value="">Select Category</option>
+                      <option value="traditional">Traditional</option>
+                      <option value="fill-in-the-blanks">
+                        Fill in the blanks
+                      </option>
+                    </select>
+                  </div>
                   <br />
-                  {quizzes?.map((quiz: any, quizIndex: number) => (
-                    <div key={quizIndex}>
-                      <input
-                        type="text"
-                        name="question"
-                        placeholder="What is the capital of France?"
-                        required
-                        className={`${styles.input} my-2`}
-                        value={quiz.question}
-                        onChange={(e) =>
-                          handleQuizChange(quizIndex, e.target.value)
-                        }
-                      />
-                      {quiz.options.map((option: any, optionIndex: number) => (
-                        <div key={optionIndex}>
-                          <input
-                            type="text"
-                            name="text"
-                            placeholder="Paris"
-                            required
-                            className={`${styles.input} my-2`}
-                            value={option.text}
-                            onChange={(e) =>
-                              handleOptionChange(
-                                quizIndex,
-                                optionIndex,
-                                e.target.value,
-                                option.isCorrect
+                  {quizCategory === "traditional" ? (
+                    <>
+                      {item?.quizzes?.map((quiz: any, quizIndex: number) => (
+                        <>
+                          <div className="w-full">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              id={`file-${quizIndex}`}
+                              className="hidden"
+                              onChange={(e) => handleFileChange(e, quizIndex)}
+                            />
+                            <label
+                              htmlFor={`file-${quizIndex}`}
+                              className={`w-full min-h-[10vh] dark:border-white border-[#00000026] p-3 border flex items-center justify-center ${
+                                dragging ? "bg-blue-500" : "bg-transparent"
+                              }`}
+                              onDragOver={handleDragOver}
+                              onDragLeave={handleDragLeave}
+                              onDrop={(e) => handleDrop(e, quizIndex)}
+                            >
+                              {quiz.thumbnail ? (
+                                <img
+                                  src={quiz?.thumbnail?.url}
+                                  alt=""
+                                  className="max-h-full w-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-black dark:text-white">
+                                  Drag and drop your thumbnail here or click to
+                                  browse
+                                </span>
+                              )}
+                            </label>
+                          </div>
+                          <div key={quizIndex}>
+                            <input
+                              type="text"
+                              name="question"
+                              placeholder="What is the capital of France?"
+                              required
+                              className={`${styles.input} my-2`}
+                              value={quiz.question}
+                              onChange={(e) => {
+                                const updatedCourseContentData = [
+                                  ...courseContentData,
+                                ];
+                                updatedCourseContentData[index] = {
+                                  ...updatedCourseContentData[index],
+                                  quizzes: updatedCourseContentData[
+                                    index
+                                  ].quizzes.map((quiz, i) =>
+                                    i === quizIndex
+                                      ? { ...quiz, question: e.target.value }
+                                      : quiz
+                                  ),
+                                };
+                                setCourseContentData(updatedCourseContentData);
+                              }}
+                            />
+                            {quiz.options.map(
+                              (option: any, optionIndex: number) => (
+                                <div key={optionIndex}>
+                                  <input
+                                    type="text"
+                                    name="text"
+                                    placeholder="Paris"
+                                    required
+                                    className={`${styles.input} my-2`}
+                                    value={option.text}
+                                    onChange={(e) =>
+                                      handleOptionChange(
+                                        quizIndex,
+                                        optionIndex,
+                                        e.target.value,
+                                        option.isCorrect
+                                      )
+                                    }
+                                  />
+                                  <input
+                                    type="checkbox"
+                                    checked={option.isCorrect}
+                                    value={option.isCorrect}
+                                    onChange={(e) =>
+                                      handleOptionChange(
+                                        quizIndex,
+                                        optionIndex,
+                                        option.text,
+                                        e.target.checked
+                                      )
+                                    }
+                                    className="mb-3"
+                                  />{" "}
+                                  Correct answer
+                                </div>
                               )
-                            }
-                          />
-                          <input
-                            type="checkbox"
-                            checked={option.isCorrect}
-                            value={option.isCorrect}
-                            onChange={(e) =>
-                              handleOptionChange(
-                                quizIndex,
-                                optionIndex,
-                                option.text,
-                                e.target.checked
-                              )
-                            }
-                          />{" "}
-                          Correct answer
-                        </div>
+                            )}
+                            <AiOutlinePlusCircle
+                              style={{
+                                margin: "10px 0px",
+                                cursor: "pointer",
+                                width: "30px",
+                              }}
+                              onClick={() => handleAddOption(quizIndex)}
+                              className="inline-block"
+                            />{" "}
+                            Add Option
+                            <AiOutlineMinusCircle
+                              style={{
+                                margin: "10px 0px",
+                                cursor: "pointer",
+                                width: "30px",
+                              }}
+                              onClick={() => handleRemoveQuiz(quizIndex)}
+                              className="inline-block"
+                            />
+                            Remove Quiz
+                          </div>
+                        </>
                       ))}
-                      <AiOutlinePlusCircle
-                        style={{
-                          margin: "10px 0px",
-                          cursor: "pointer",
-                          width: "30px",
-                        }}
-                        onClick={() => handleAddOption(quizIndex)}
-                        className="inline-block"
-                      />{" "}
-                      Add Option
-                      <AiOutlineMinusCircle
-                        style={{
-                          margin: "10px 0px",
-                          cursor: "pointer",
-                          width: "30px",
-                        }}
-                        onClick={() => handleRemoveQuiz(quizIndex)}
-                      />
-                    </div>
-                  ))}
+                    </>
+                  ) : (
+                    <>
+                      {item?.quizzes?.map((quiz: any, quizIndex: number) => (
+                        <>
+                          <div className="w-full">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              id={`file-${quizIndex}`}
+                              className="hidden"
+                              onChange={(e) => handleFileChange(e, quizIndex)}
+                            />
+                            <label
+                              htmlFor={`file-${quizIndex}`}
+                              className={`w-full min-h-[10vh] dark:border-white border-[#00000026] p-3 border flex items-center justify-center ${
+                                dragging ? "bg-blue-500" : "bg-transparent"
+                              }`}
+                              onDragOver={handleDragOver}
+                              onDragLeave={handleDragLeave}
+                              onDrop={(e) => handleDrop(e, quizIndex)}
+                            >
+                              {quiz.thumbnail ? (
+                                <img
+                                  src={quiz?.thumbnail?.url}
+                                  alt=""
+                                  className="max-h-full w-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-black dark:text-white">
+                                  Drag and drop your thumbnail here or click to
+                                  browse
+                                </span>
+                              )}
+                            </label>
+                          </div>
+                          <div key={quizIndex}>
+                            <input
+                              type="text"
+                              name="question"
+                              placeholder="What is the capital of France?"
+                              required
+                              className={`${styles.input} my-2`}
+                              value={quiz.question}
+                              onChange={(e) =>
+                                handleQuizChange(quizIndex, e.target.value)
+                              }
+                            />
+                            <button
+                              onClick={(e) => handleAddBlank(e, quizIndex)}
+                            >
+                              Add Blank
+                            </button>
+                            {quiz.options.map(
+                              (option: any, optionIndex: number) => (
+                                <div key={optionIndex}>
+                                  <input
+                                    type="text"
+                                    name="text"
+                                    placeholder="Paris"
+                                    required
+                                    className={`${styles.input} my-2`}
+                                    value={option.text}
+                                    onChange={(e) =>
+                                      handleOptionChange(
+                                        quizIndex,
+                                        optionIndex,
+                                        e.target.value,
+                                        option.isCorrect
+                                      )
+                                    }
+                                  />
+                                  <input
+                                    type="checkbox"
+                                    checked={option.isCorrect}
+                                    value={option.isCorrect}
+                                    onChange={(e) =>
+                                      handleOptionChange(
+                                        quizIndex,
+                                        optionIndex,
+                                        option.text,
+                                        e.target.checked
+                                      )
+                                    }
+                                  />{" "}
+                                  Correct answer
+                                </div>
+                              )
+                            )}
+                            <AiOutlinePlusCircle
+                              style={{
+                                margin: "10px 0px",
+                                cursor: "pointer",
+                                width: "30px",
+                              }}
+                              onClick={() => handleAddOption(quizIndex)}
+                              className="inline-block"
+                            />{" "}
+                            Add Option
+                            <AiOutlineMinusCircle
+                              style={{
+                                margin: "10px 0px",
+                                cursor: "pointer",
+                                width: "30px",
+                              }}
+                              onClick={() => handleRemoveQuiz(quizIndex)}
+                              className="inline-block"
+                            />{" "}
+                            Remove Quiz
+                          </div>
+                        </>
+                      ))}
+                    </>
+                  )}
                   <AiOutlinePlusCircle
                     style={{
                       margin: "10px 0px",
@@ -476,7 +741,9 @@ const CourseContent: FC<Props> = ({
                       width: "30px",
                     }}
                     onClick={handleAddQuiz}
+                    className="inline-block"
                   />
+                  Add Quiz
                 </div>
               </div>
             </>

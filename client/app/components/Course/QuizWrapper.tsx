@@ -177,12 +177,14 @@ interface QuizWrapperProps {
   setActiveContent: React.Dispatch<
     React.SetStateAction<{ type: string; index: number }>
   >;
+  activeContent: { type: string; index: number };
   nextContent: () => void;
 }
 
 const QuizWrapper: React.FC<QuizWrapperProps> = ({
   quiz,
   setActiveContent,
+  activeContent,
   nextContent,
 }) => {
   const [selectedOptions, setSelectedOptions] = useState<
@@ -224,8 +226,10 @@ const QuizWrapper: React.FC<QuizWrapperProps> = ({
     setSelectedOptions({});
     setCurrentQuestionIndex(0);
     setCorrectBlanks(0);
+    setScore(0);
     setIncorrectAnswers(0);
     setShowAnswers(false); // Reset the showAnswers state
+    setOptions(quiz[currentQuestionIndex]?.options);
   };
 
   // Define the total number of blanks and correctly filled blanks
@@ -261,6 +265,10 @@ const QuizWrapper: React.FC<QuizWrapperProps> = ({
       setCorrectBlanks((prevCorrectBlanks) => prevCorrectBlanks + 1);
     }
   };
+
+  useEffect(() => {
+    handleQuizRetake();
+  }, [activeContent]);
 
   useEffect(() => {
     if (quiz) {
@@ -407,23 +415,33 @@ const QuizWrapper: React.FC<QuizWrapperProps> = ({
             <h1 className="text-4xl mb-4">Section 1: Mock Test - PART 1</h1>
             <h2
               className={
-                (quizSubmitted.correctAnswers / quizSubmitted.totalQuestions) *
-                  100 >=
-                80
+                quiz[currentQuestionIndex]?.category === "traditonal"
+                  ? (quizSubmitted.correctAnswers /
+                      quizSubmitted.totalQuestions) *
+                      100 >=
+                    80
+                    ? "text-green-500" + " text-6xl mb-4"
+                    : "text-red-500" + " text-6xl mb-4"
+                  : (score / quiz.length) * 100 >= 80
                   ? "text-green-500" + " text-6xl mb-4"
                   : "text-red-500" + " text-6xl mb-4"
               }
             >
-              {(quizSubmitted.correctAnswers / quizSubmitted.totalQuestions) *
-                100 >=
-              80
+              {quiz[currentQuestionIndex]?.category === "traditional"
+                ? (quizSubmitted.correctAnswers /
+                    quizSubmitted.totalQuestions) *
+                    100 >=
+                  80
+                  ? "Passed! ✅"
+                  : "Failed! ❌"
+                : (score / quiz.length) * 100 >= 80
                 ? "Passed! ✅"
                 : "Failed! ❌"}
             </h2>
             <div className="flex justify-around w-full mb-4">
               <div className="flex flex-col items-center">
                 <p className="text-green-500 text-6xl">
-                  {quiz[currentQuestionIndex].category === "traditional"
+                  {quiz[currentQuestionIndex]?.category === "traditional"
                     ? quizSubmitted.correctAnswers
                     : score}
                 </p>
@@ -431,15 +449,19 @@ const QuizWrapper: React.FC<QuizWrapperProps> = ({
               </div>
               <div className="w-1/3 bg-gray-700 h-20 rounded-lg overflow-hidden mb-2 mx-2 relative">
                 <p className="absolute inset-0 flex justify-center items-center">
-                  {(quizSubmitted.correctAnswers /
-                    quizSubmitted.totalQuestions) *
-                    100}
+                  {quiz[currentQuestionIndex]?.category === "traditional"
+                    ? (quizSubmitted.correctAnswers /
+                        quizSubmitted.totalQuestions) *
+                      100
+                    : (score / quiz.length) * 100}
                   %
                 </p>
               </div>
               <div className="flex flex-col items-center">
                 <p className="text-red-500 text-6xl">
-                  {quizSubmitted.incorrectAnswers}
+                  {quiz[currentQuestionIndex]?.category === "traditional"
+                    ? quizSubmitted.incorrectAnswers
+                    : 0}
                 </p>
                 <p className="text-sm">wrong answers</p>
               </div>
@@ -493,9 +515,8 @@ const QuizWrapper: React.FC<QuizWrapperProps> = ({
                         )
                       )}
               </h2>
-              {quiz[currentQuestionIndex]?.category === "fill-in-the-blanks" && (
-                <Trash handleDrop={handleOptionDrop} />
-              )}
+              {quiz[currentQuestionIndex]?.category ===
+                "fill-in-the-blanks" && <Trash handleDrop={handleOptionDrop} />}
               <div className="grid grid-cols-2">
                 {quiz[currentQuestionIndex]?.category === "traditional" ? (
                   options.map((option, index) => (

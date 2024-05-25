@@ -47,10 +47,10 @@ const EditCourse:FC<Props> = ({id}) => {
         estimatedPrice: editCourseData?.estimatedPrice,
         tags: editCourseData.tags,
         level: editCourseData.level,
-        categories:editCourseData.categories,
+        categories: editCourseData.categories,
         demoUrl: editCourseData.demoUrl,
         thumbnail: editCourseData?.thumbnail?.url,
-      })
+      });
       setBenefits(editCourseData.benefits);
       setPrerequisites(editCourseData.prerequisites);
       setCourseContentData(
@@ -62,17 +62,16 @@ const EditCourse:FC<Props> = ({id}) => {
     }
   }, [editCourseData]);
 
-
   const [courseInfo, setCourseInfo] = useState({
     name: "",
-    description:  "",
-    price:  "",
-    estimatedPrice:  "",
+    description: "",
+    price: "",
+    estimatedPrice: "",
     tags: "",
-    level:  "",
-    categories:"",
-    demoUrl:  "",
-    thumbnail:  "",
+    level: "",
+    categories: "",
+    demoUrl: "",
+    thumbnail: "",
   });
   const [benefits, setBenefits] = useState([{ title: "" }]);
   const [prerequisites, setPrerequisites] = useState([{ title: "" }]);
@@ -89,11 +88,11 @@ const EditCourse:FC<Props> = ({id}) => {
         },
       ],
       suggestion: "",
+      quizzes: [],
     },
   ]);
 
   const [courseData, setCourseData] = useState({});
-
 
   const handleSubmit = async () => {
     // Format benefits array
@@ -117,6 +116,7 @@ const EditCourse:FC<Props> = ({id}) => {
           url: link.url,
         })),
         suggestion: courseContent.suggestion,
+        quizzes: courseContent.quizzes,
       })
     );
 
@@ -140,10 +140,10 @@ const EditCourse:FC<Props> = ({id}) => {
     setCourseData(data);
   };
 
-
   const handleCourseCreate = async (e: any) => {
     const data = courseData;
-    await editCourse({id:editCourseData?._id,data});
+    console.log(data);
+    await editCourse({ id: editCourseData?._id, data });
   };
 
   return (
@@ -169,13 +169,14 @@ const EditCourse:FC<Props> = ({id}) => {
           />
         )}
 
-        {active === 2 && (
+        {active === 2 && courseContentData[0] && (
           <CourseContent
             active={active}
             setActive={setActive}
             courseContentData={courseContentData}
             setCourseContentData={setCourseContentData}
             handleSubmit={handleSubmit}
+            quizzes={courseContentData[0].quizzes}
           />
         )}
 

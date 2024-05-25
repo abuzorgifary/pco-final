@@ -65,6 +65,8 @@ const CourseContentMedia = ({
     (quiz) => quiz.category === "fill-in-the-blanks"
   );
 
+  console.log(data);
+
   const [
     addNewQuestion,
     { isSuccess, error, isLoading: questionCreationLoading },
@@ -276,12 +278,14 @@ const CourseContentMedia = ({
           <QuizWrapper
             quiz={traditionalQuizzes}
             setActiveContent={setActiveContent}
+            activeContent={activeContent}
             nextContent={nextContent}
           />
         ) : activeContent.type === "dragndrop" ? (
           <QuizWrapper
             quiz={dragAndDropQuizzes}
             setActiveContent={setActiveContent}
+            activeContent={activeContent}
             nextContent={nextContent}
           />
         ) : (

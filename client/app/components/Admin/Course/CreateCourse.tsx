@@ -59,6 +59,8 @@ const CreateCourse = (props: Props) => {
       quizzes: [
         {
           question: "",
+          category: "",
+          thumbnail: "",
           options: [{ text: "", isCorrect: false }],
         },
       ],
@@ -68,6 +70,8 @@ const CreateCourse = (props: Props) => {
   const [quizzes, setQuizzes] = useState([
     {
       question: "",
+      thumbnail: "",
+      category: "",
       options: [{ text: "", isCorrect: false }],
     },
   ]);
@@ -87,6 +91,8 @@ const CreateCourse = (props: Props) => {
     // Format quizzes array
     const formattedQuizzes = quizzes.map((quiz) => ({
       question: quiz.question,
+      thumbnail: quiz.thumbnail,
+      category: quiz.category,
       options: quiz.options.map((option) => ({
         text: option.text,
         isCorrect: option.isCorrect,
