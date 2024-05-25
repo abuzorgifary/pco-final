@@ -21,11 +21,21 @@ interface ILink extends Document {
 
 interface IQuiz extends Document {
   question: string;
+  thumbnail: {
+    public_id: string;
+    url: string;
+  };
+  category: string;
   options: { text: string; isCorrect: boolean }[];
 }
 
 const quizSchema = new Schema<IQuiz>({
   question: String,
+  thumbnail: {
+    public_id: String,
+    url: String,
+  },
+  category: String,
   options: [{ text: String, isCorrect: Boolean }],
 });
 
