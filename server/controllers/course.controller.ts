@@ -80,7 +80,11 @@ export const editCourse = CatchAsyncError(
           public_id: myCloud.public_id,
           url: myCloud.secure_url,
         };
-      } else if (courseData.thumbnail && thumbnail.startsWith("https")) {
+      } else if (
+        thumbnail &&
+        courseData.thumbnail &&
+        thumbnail.startsWith("https")
+      ) {
         data.thumbnail = {
           public_id: courseData.thumbnail.public_id,
           url: courseData.thumbnail.url,
