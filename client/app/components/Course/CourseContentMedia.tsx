@@ -59,10 +59,10 @@ const CourseContentMedia = ({
   const [isReviewReply, setIsReviewReply] = useState(false);
 
   const traditionalQuizzes = data[activeContent.index].quizzes.filter(
-    (quiz) => quiz.category === "traditional"
+    (quiz:any) => quiz.category === "traditional"
   );
   const dragAndDropQuizzes = data[activeContent.index].quizzes.filter(
-    (quiz) => quiz.category === "fill-in-the-blanks"
+    (quiz:any) => quiz.category === "fill-in-the-blanks"
   );
 
   console.log(data);

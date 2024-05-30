@@ -88,16 +88,16 @@ const CreateCourse = (props: Props) => {
       title: prerequisite.title,
     }));
 
-    // Format quizzes array
-    const formattedQuizzes = quizzes.map((quiz) => ({
-      question: quiz.question,
-      thumbnail: quiz.thumbnail,
-      category: quiz.category,
-      options: quiz.options.map((option) => ({
-        text: option.text,
-        isCorrect: option.isCorrect,
-      })),
-    }));
+    // // Format quizzes array
+    // const formattedQuizzes = courseContentData.quizzes.map((quiz) => ({
+    //   question: quiz.question,
+    //   thumbnail: quiz.thumbnail,
+    //   category: quiz.category,
+    //   options: quiz.options.map((option) => ({
+    //     text: option.text,
+    //     isCorrect: option.isCorrect,
+    //   })),
+    // }));
 
     // Format course content array
     const formattedCourseContentData = courseContentData.map(
@@ -112,7 +112,7 @@ const CreateCourse = (props: Props) => {
           url: link.url,
         })),
         suggestion: courseContent.suggestion,
-        quizzes: formattedQuizzes,
+        quizzes: courseContent.quizzes,
       })
     );
 

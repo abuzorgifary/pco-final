@@ -52,12 +52,24 @@ const CourseContent: FC<Props> = ({
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
-    const updatedQuizzes = quizzes.map((quiz) => ({
-      ...quiz,
-      category: quizCategory,
-    }));
+    setCourseContentData((prevCourseContentData: any) => {
+      const updatedCourseContentData = prevCourseContentData.map(
+        (contentData: any, index: number) => {
+          if (contentData.quizzes) {
+            return {
+              ...contentData,
+              quizzes: contentData.quizzes.map((quiz: any) => ({
+                ...quiz,
+                category: quizCategory,
+              })),
+            };
+          }
+          return contentData;
+        }
+      );
 
-    setQuizzes(updatedQuizzes);
+      return updatedCourseContentData;
+    });
   };
 
   const handleCollapseToggle = (index: number) => {
@@ -132,6 +144,7 @@ const CourseContent: FC<Props> = ({
         videoLength: "",
         videoSection: `Untitled Section ${activeSection}`,
         links: [{ title: "", url: "" }],
+        quizzes: [],
       };
       setCourseContentData([...courseContentData, newContent]);
     }
@@ -162,51 +175,106 @@ const CourseContent: FC<Props> = ({
     setCourseContentData(updatedCourseContentData);
   };
 
-  const handleAddBlank = (e: any, quizIndex: number) => {
+  const handleQuizCategoryChange = (index: number, value: any) => {
+    setQuizCategory(value);
+    setCourseContentData((prevCourseContentData: any) => {
+      const updatedCourseContentData = [...prevCourseContentData];
+      updatedCourseContentData[index].quizzes = updatedCourseContentData[
+        index
+      ].quizzes.map((quiz: any) => ({
+        ...quiz,
+        category: value,
+      }));
+      return updatedCourseContentData;
+    });
+    console.log(courseContentData);
+  };
+
+  const handleAddBlank = (e: any, index: number, quizIndex: number) => {
     e.preventDefault();
-    const quizzesCopy = [...quizzes];
-    quizzesCopy[quizIndex].question += ` {blank${blankCount}}`;
-    setQuizzes(quizzesCopy);
+    setCourseContentData((prevCourseContentData: any) => {
+      const updatedCourseContentData = [...prevCourseContentData];
+      updatedCourseContentData[index].quizzes[
+        quizIndex
+      ].question += ` {blank${blankCount}}`;
+      return updatedCourseContentData;
+    });
     setBlankCount(blankCount + 1);
   };
 
   const handleOptionChange = (
+    index: number,
     quizIndex: number,
     optionIndex: number,
     value: any,
     isCorrect: boolean
   ) => {
-    const updatedQuizzes = [...quizzes];
-    updatedQuizzes[quizIndex].options[optionIndex] = {
+    const updatedCourseContentData = [...courseContentData];
+    updatedCourseContentData[index].quizzes[quizIndex].options[optionIndex] = {
       text: value,
       isCorrect: isCorrect,
     };
-    setQuizzes(updatedQuizzes);
+    setCourseContentData(updatedCourseContentData);
     console.log("Option change", quizzes);
   };
 
-  const handleAddOption = (quizIndex: number) => {
-    const updatedQuizzes = [...quizzes];
-    updatedQuizzes[quizIndex].options.push({ text: "", isCorrect: false });
-    setQuizzes(updatedQuizzes);
+  const handleAddOption = (index: number, quizIndex: number) => {
+    setCourseContentData((prevCourseContentData: any) => {
+      const updatedCourseContentData = [...prevCourseContentData];
+
+      // Debugging logs
+      console.log("courseContentData:", updatedCourseContentData);
+      console.log("index:", index);
+      console.log("quizIndex:", quizIndex);
+      console.log("courseContentData[index]:", updatedCourseContentData[index]);
+      console.log(
+        "courseContentData[index].quizzes:",
+        updatedCourseContentData[index]?.quizzes
+      );
+      console.log(
+        "courseContentData[index].quizzes[quizIndex]:",
+        updatedCourseContentData[index]?.quizzes[quizIndex]
+      );
+
+      if (
+        updatedCourseContentData[index] &&
+        updatedCourseContentData[index].quizzes[quizIndex]
+      ) {
+        updatedCourseContentData[index].quizzes[quizIndex].options.push({
+          text: "",
+          isCorrect: false,
+        });
+      }
+
+      return updatedCourseContentData;
+    });
   };
 
-  const handleAddQuiz = () => {
-    setQuizzes([
-      ...quizzes,
-      {
+  const handleAddQuiz = (index: number) => {
+    setCourseContentData((prevCourseContentData: any) => {
+      const updatedCourseContentData = [...prevCourseContentData];
+
+      // Add a new quiz
+      updatedCourseContentData[index].quizzes.push({
         question: "",
         thumbnail: "",
         category: "",
         options: [{ text: "", isCorrect: false }],
-      },
-    ]);
-    setBlankCount(0);
+      });
+
+      return updatedCourseContentData;
+    });
   };
 
-  const handleRemoveQuiz = (quizIndex: number) => {
-    const updatedQuizzes = quizzes.filter((_, index) => index !== quizIndex);
-    setQuizzes(updatedQuizzes);
+  const handleRemoveQuiz = (index: number, quizIndex: number) => {
+    setCourseContentData((prevCourseContentData: any) => {
+      const updatedCourseContentData = [...prevCourseContentData];
+
+      // Remove the quiz at quizIndex
+      updatedCourseContentData[index].quizzes.splice(quizIndex, 1);
+
+      return updatedCourseContentData;
+    });
   };
 
   const handleFileChange = (e: any, quizIndex: number) => {
@@ -490,7 +558,9 @@ const CourseContent: FC<Props> = ({
                       id=""
                       className={`${styles.input}`}
                       value={quizCategory}
-                      onChange={(e) => setQuizCategory(e.target.value)}
+                      onChange={(e) =>
+                        handleQuizCategoryChange(index, e.target.value)
+                      }
                     >
                       <option value="">Select Category</option>
                       <option value="traditional">Traditional</option>
@@ -551,7 +621,7 @@ const CourseContent: FC<Props> = ({
                                   ...updatedCourseContentData[index],
                                   quizzes: updatedCourseContentData[
                                     index
-                                  ].quizzes.map((quiz, i) =>
+                                  ].quizzes.map((quiz: any, i: number) =>
                                     i === quizIndex
                                       ? { ...quiz, question: e.target.value }
                                       : quiz
@@ -572,6 +642,7 @@ const CourseContent: FC<Props> = ({
                                     value={option.text}
                                     onChange={(e) =>
                                       handleOptionChange(
+                                        index,
                                         quizIndex,
                                         optionIndex,
                                         e.target.value,
@@ -585,6 +656,7 @@ const CourseContent: FC<Props> = ({
                                     value={option.isCorrect}
                                     onChange={(e) =>
                                       handleOptionChange(
+                                        index,
                                         quizIndex,
                                         optionIndex,
                                         option.text,
@@ -603,7 +675,7 @@ const CourseContent: FC<Props> = ({
                                 cursor: "pointer",
                                 width: "30px",
                               }}
-                              onClick={() => handleAddOption(quizIndex)}
+                              onClick={() => handleAddOption(index, quizIndex)}
                               className="inline-block"
                             />{" "}
                             Add Option
@@ -613,7 +685,7 @@ const CourseContent: FC<Props> = ({
                                 cursor: "pointer",
                                 width: "30px",
                               }}
-                              onClick={() => handleRemoveQuiz(quizIndex)}
+                              onClick={() => handleRemoveQuiz(index, quizIndex)}
                               className="inline-block"
                             />
                             Remove Quiz
@@ -665,11 +737,15 @@ const CourseContent: FC<Props> = ({
                               className={`${styles.input} my-2`}
                               value={quiz.question}
                               onChange={(e) =>
-                                handleQuizChange(quizIndex, e.target.value)
+                                handleQuizChange(
+                                  index,
+                                  quizIndex,
+                                  e.target.value
+                                )
                               }
                             />
                             <button
-                              onClick={(e) => handleAddBlank(e, quizIndex)}
+                              onClick={(e) => handleAddBlank(e,index, quizIndex)}
                             >
                               Add Blank
                             </button>
@@ -685,6 +761,7 @@ const CourseContent: FC<Props> = ({
                                     value={option.text}
                                     onChange={(e) =>
                                       handleOptionChange(
+                                        index,
                                         quizIndex,
                                         optionIndex,
                                         e.target.value,
@@ -698,6 +775,7 @@ const CourseContent: FC<Props> = ({
                                     value={option.isCorrect}
                                     onChange={(e) =>
                                       handleOptionChange(
+                                        index,
                                         quizIndex,
                                         optionIndex,
                                         option.text,
@@ -715,7 +793,7 @@ const CourseContent: FC<Props> = ({
                                 cursor: "pointer",
                                 width: "30px",
                               }}
-                              onClick={() => handleAddOption(quizIndex)}
+                              onClick={() => handleAddOption(index, quizIndex)}
                               className="inline-block"
                             />{" "}
                             Add Option
@@ -725,7 +803,7 @@ const CourseContent: FC<Props> = ({
                                 cursor: "pointer",
                                 width: "30px",
                               }}
-                              onClick={() => handleRemoveQuiz(quizIndex)}
+                              onClick={() => handleRemoveQuiz(index, quizIndex)}
                               className="inline-block"
                             />{" "}
                             Remove Quiz
@@ -740,7 +818,7 @@ const CourseContent: FC<Props> = ({
                       cursor: "pointer",
                       width: "30px",
                     }}
-                    onClick={handleAddQuiz}
+                    onClick={() => handleAddQuiz(index)}
                     className="inline-block"
                   />
                   Add Quiz
