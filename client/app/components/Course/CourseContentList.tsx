@@ -6,9 +6,9 @@ import { VscChecklist } from "react-icons/vsc";
 
 type Props = {
   data: any;
-  activeContent: { type: string; index: number };
+  activeContent: { type: string; index: number; id: string };
   setActiveContent: React.Dispatch<
-    React.SetStateAction<{ type: string; index: number }>
+    React.SetStateAction<{ type: string; index: number; id: string }>
   >;
   isDemo?: boolean;
 };
@@ -35,7 +35,7 @@ const CourseContentList: FC<Props> = (props) => {
     setVisibleSections(newVisibleSections);
   };
 
-  console.log(videoSections);
+  console.log(props.data);
 
   return (
     <div
@@ -101,21 +101,23 @@ const CourseContentList: FC<Props> = (props) => {
                   const videoIndex: number = sectionStartIndex + index; // Calculate the video index within the overall list
                   const contentLength: number = item.videoLength / 60;
                   return (
-                    <>
+                    <div key={index}>
                       <div
                         className={`w-full ${
                           videoIndex === props.activeContent.index &&
-                          props.activeContent.type === "video"
+                          props.activeContent.type === "video" &&
+                          props.activeContent.id === item._id
                             ? "bg-slate-800"
                             : ""
                         } cursor-pointer transition-all p-2`}
-                        key={item._id}
+                        key={`${item._id}-${videoIndex}`}
                         onClick={() =>
                           props.isDemo
                             ? null
                             : props?.setActiveContent({
                                 type: "video",
                                 index: videoIndex,
+                                id: item._id,
                               })
                         }
                       >
@@ -138,13 +140,41 @@ const CourseContentList: FC<Props> = (props) => {
                           {item.videoLength > 60 ? "hours" : "minutes"}
                         </h5>
                       </div>
+                      {item.pdfs.map((pdf: any, pdfIndex: number) => (
+                        <div
+                          className={`w-full ${
+                            props.activeContent.type === "pdf" &&
+                            props.activeContent.index === pdfIndex &&
+                            props.activeContent.id === pdf._id
+                              ? "bg-slate-800"
+                              : ""
+                          } cursor-pointer transition-all p-2`}
+                          key={`${pdf._id}-${pdfIndex}`}
+                          onClick={() =>
+                            props.isDemo
+                              ? null
+                              : props?.setActiveContent({
+                                  type: "pdf",
+                                  index: pdfIndex,
+                                  id: pdf._id,
+                                })
+                          }
+                        >
+                          <h1 className="text-[18px] inline-block break-words text-black dark:text-white">
+                            {" "}
+                            <RiDragDropFill className="inline-block text-2xl text-cyan-500" />{" "}
+                            PDFs{" "}
+                          </h1>
+                        </div>
+                      ))}
+
                       <div
                         className={`w-full ${
                           props.activeContent.type === "traditional"
                             ? "bg-slate-800"
                             : ""
                         } cursor-pointer transition-all p-2`}
-                        key={sectionIndex}
+                        key={`quiz-${sectionIndex}`}
                         onClick={() =>
                           props.isDemo
                             ? null
@@ -166,7 +196,7 @@ const CourseContentList: FC<Props> = (props) => {
                             ? "bg-slate-800"
                             : ""
                         } cursor-pointer transition-all p-2`}
-                        key={sectionIndex}
+                        key={`dragndrop-${sectionIndex}`}
                         onClick={() =>
                           props.isDemo
                             ? null
@@ -182,7 +212,7 @@ const CourseContentList: FC<Props> = (props) => {
                           Drag n Drop{" "}
                         </h1>
                       </div>
-                    </>
+                    </div>
                   );
                 })}
               </div>

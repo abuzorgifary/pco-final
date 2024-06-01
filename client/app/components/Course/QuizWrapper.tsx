@@ -175,9 +175,9 @@ const Blank: React.FC<BlankProps> = ({ handleOptionDrop }) => {
 interface QuizWrapperProps {
   quiz: any[];
   setActiveContent: React.Dispatch<
-    React.SetStateAction<{ type: string; index: number }>
+    React.SetStateAction<{ type: string; index: number; id: string }>
   >;
-  activeContent: { type: string; index: number };
+  activeContent: { type: string; index: number; id: string };
   nextContent: () => void;
 }
 

@@ -64,6 +64,12 @@ const CreateCourse = (props: Props) => {
           options: [{ text: "", isCorrect: false }],
         },
       ],
+      pdfs: [
+        {
+          title: "",
+          pdfUrl: "",
+        },
+      ],
     },
   ]);
 
@@ -113,6 +119,10 @@ const CreateCourse = (props: Props) => {
         })),
         suggestion: courseContent.suggestion,
         quizzes: courseContent.quizzes,
+        pdfs: courseContent.pdfs.map((pdf) => ({
+          title: pdf.title,
+          pdfUrl: pdf.pdfUrl,
+        })),
       })
     );
 

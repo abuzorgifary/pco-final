@@ -8,6 +8,7 @@ import {
 } from "react-icons/ai";
 import { BsLink45Deg, BsPencil } from "react-icons/bs";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { GrDocumentPdf } from "react-icons/gr";
 
 type Props = {
   active: number;
@@ -48,6 +49,7 @@ const CourseContent: FC<Props> = ({
   const [dragging, setDragging] = useState(false);
   const [quizCategory, setQuizCategory] = useState("traditional");
   const [blankCount, setBlankCount] = useState(0);
+  const [pdfs, setPdfs] = useState([{ title: "", pdfUrl: "" }]);
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
@@ -70,6 +72,47 @@ const CourseContent: FC<Props> = ({
 
       return updatedCourseContentData;
     });
+  };
+
+  const handlePdfChange = (e: any, index: number, pdfIndex: number) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const updatedCourseContentData = [...courseContentData];
+      updatedCourseContentData[index].pdfs[pdfIndex] = {
+        title: file.name,
+        pdfUrl: reader.result as string,
+      };
+      setCourseContentData(updatedCourseContentData);
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const handlePdfDrop = (e: any, index: number, pdfIndex: number) => {
+    e.preventDefault();
+    setDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = (e: any) => {
+        if (typeof reader.result === "string") {
+          // Create a copy of the courseContentData state
+          const updatedCourseContentData = [...courseContentData];
+
+          // Update the pdfUrl of the specific PDF
+          updatedCourseContentData[index].pdfs[pdfIndex].pdfUrl = reader.result;
+
+          // Update the courseContentData state
+          setCourseContentData(updatedCourseContentData);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleCollapseToggle = (index: number) => {
@@ -120,6 +163,7 @@ const CourseContent: FC<Props> = ({
         videoLength: "",
         links: [{ title: "", url: "" }],
         quizzes: [],
+        pdfs: [],
       };
 
       setCourseContentData([...courseContentData, newContent]);
@@ -145,6 +189,7 @@ const CourseContent: FC<Props> = ({
         videoSection: `Untitled Section ${activeSection}`,
         links: [{ title: "", url: "" }],
         quizzes: [],
+        pdfs: [],
       };
       setCourseContentData([...courseContentData, newContent]);
     }
@@ -200,6 +245,15 @@ const CourseContent: FC<Props> = ({
       return updatedCourseContentData;
     });
     setBlankCount(blankCount + 1);
+  };
+
+  const handleAddPdf = (index: number) => {
+    const updatedCourseContentData = [...courseContentData];
+    updatedCourseContentData[index].pdfs.push({
+      title: "",
+      pdfUrl: "",
+    });
+    setCourseContentData(updatedCourseContentData);
   };
 
   const handleOptionChange = (
@@ -374,7 +428,6 @@ const CourseContent: FC<Props> = ({
                     <br />
                   </>
                 )}
-
                 <div className="flex w-full items-center justify-between my-0">
                   {isCollapsed[index] ? (
                     <>
@@ -548,7 +601,41 @@ const CourseContent: FC<Props> = ({
                     </p>
                   </div>
                 )}
+                <GrDocumentPdf className="inline-block mr-2 text-white" />
+                <button onClick={() => handleAddPdf(index)}>Add PDF</button>
                 <div>
+                  {courseContentData[index].pdfs.map(
+                    (pdf: any, pdfIndex: number) => (
+                      <div key={pdfIndex} className="w-full">
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          id={`pdf-${index}-${pdfIndex}`}
+                          className="hidden"
+                          onChange={(e) => handlePdfChange(e, index, pdfIndex)}
+                        />
+                        <label
+                          htmlFor={`pdf-${index}-${pdfIndex}`}
+                          className={`w-full min-h-[10vh] dark:border-white border-[#00000026] p-3 border flex items-center justify-center ${
+                            dragging ? "bg-blue-500" : "bg-transparent"
+                          }`}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={(e) => handlePdfDrop(e, index, pdfIndex)}
+                        >
+                          {pdf.pdfUrl ? (
+                            <span className="text-black dark:text-white">
+                              {pdf.title}
+                            </span>
+                          ) : (
+                            <span className="text-black dark:text-white">
+                              Drag and drop your PDF here or click to browse
+                            </span>
+                          )}
+                        </label>
+                      </div>
+                    )
+                  )}
                   <div className="w-[50%] mt-5">
                     <label className={`${styles.label} w-[50%]`}>
                       Course Categories
@@ -745,7 +832,9 @@ const CourseContent: FC<Props> = ({
                               }
                             />
                             <button
-                              onClick={(e) => handleAddBlank(e,index, quizIndex)}
+                              onClick={(e) =>
+                                handleAddBlank(e, index, quizIndex)
+                              }
                             >
                               Add Blank
                             </button>

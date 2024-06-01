@@ -24,15 +24,16 @@ import socketIO from "socket.io-client";
 import QuizWrapper from "./QuizWrapper";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import PdfViewer from "./PdfViewer";
 const ENDPOINT = process.env.NEXT_PUBLIC_SOCKET_SERVER_URI || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 type Props = {
   data: any;
   id: string;
-  activeContent: { type: string; index: number };
+  activeContent: { type: string; index: number; id: string };
   setActiveContent: React.Dispatch<
-    React.SetStateAction<{ type: string; index: number }>
+    React.SetStateAction<{ type: string; index: number; id: string }>
   >;
   nextContent: any;
   user: any;
@@ -59,13 +60,13 @@ const CourseContentMedia = ({
   const [isReviewReply, setIsReviewReply] = useState(false);
 
   const traditionalQuizzes = data[activeContent.index].quizzes.filter(
-    (quiz:any) => quiz.category === "traditional"
+    (quiz: any) => quiz.category === "traditional"
   );
   const dragAndDropQuizzes = data[activeContent.index].quizzes.filter(
-    (quiz:any) => quiz.category === "fill-in-the-blanks"
+    (quiz: any) => quiz.category === "fill-in-the-blanks"
   );
 
-  console.log(data);
+  console.log(dragAndDropQuizzes);
 
   const [
     addNewQuestion,
@@ -288,6 +289,11 @@ const CourseContentMedia = ({
             activeContent={activeContent}
             nextContent={nextContent}
           />
+        ) : activeContent.type === "pdf" ? (
+          <div>
+            <h1>PDF</h1>
+            <PdfViewer file={data[activeContent.index].pdfs[0].pdfUrl} />
+          </div>
         ) : (
           <div></div>
         )}

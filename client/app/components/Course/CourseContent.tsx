@@ -24,19 +24,36 @@ const CourseContent = ({ id, user }: Props) => {
   const [activeContent, setActiveContent] = useState({
     type: "video",
     index: 0,
+    id: "",
   });
 
   const nextContent = () => {
     if (activeContent.index < data.length - 1) {
-      setActiveContent((prevActiveContent) => ({
-        type: "video",
-        index: prevActiveContent.index + 1,
-      }));
+      const nextIndex = activeContent.index + 1;
+      const nextItem = data[nextIndex];
+
+      // Determine the type of the next item
+      let nextType = "";
+      if (nextItem.video) {
+        nextType = "video";
+      } else if (nextItem.quiz) {
+        nextType = "quiz";
+      } else if (nextItem.dragndrop) {
+        nextType = "dragndrop";
+      } // Add more conditions here for other types of content
+
+      setActiveContent({
+        type: nextType,
+        index: nextIndex,
+        id: nextItem._id,
+      });
     } else {
       // Handle the case when there is no content after the current one
       alert("You have reached the end of the course.");
     }
   };
+  
+  
 
   return (
     <>
