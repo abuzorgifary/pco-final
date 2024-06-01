@@ -39,6 +39,16 @@ const quizSchema = new Schema<IQuiz>({
   options: [{ text: String, isCorrect: Boolean }],
 });
 
+interface IPdf extends Document {
+  title: string;
+  pdfUrl: string;
+}
+
+const pdfSchema = new Schema<IPdf>({
+  title: String,
+  pdfUrl: String,
+});
+
 interface ICourseData extends Document {
   title: string;
   description: string;
@@ -51,6 +61,7 @@ interface ICourseData extends Document {
   suggestion: string;
   questions: IComment[];
   quizzes: IQuiz[];
+  pdfs: IPdf[];
 }
 
 export interface ICourse extends Document {
@@ -110,6 +121,7 @@ const courseDataSchema = new Schema<ICourseData>({
   suggestion: String,
   questions: [commentSchema],
   quizzes: [quizSchema],
+  pdfs: [pdfSchema],
 });
 
 const courseSchema = new Schema<ICourse>(

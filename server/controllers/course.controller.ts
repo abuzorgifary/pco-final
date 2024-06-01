@@ -12,7 +12,6 @@ import sendMail from "../utils/sendMail";
 import NotificationModel from "../models/notification.Model";
 import axios from "axios";
 
-// upload course
 export const uploadCourse = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -27,6 +26,23 @@ export const uploadCourse = CatchAsyncError(
           public_id: myCloud.public_id,
           url: myCloud.secure_url,
         };
+      }
+
+      // Upload PDFs
+      if (data.courseData[0].pdfs) {
+        for (let i = 0; i < data.courseData[0].pdfs.length; i++) {
+          if (data.courseData[0].pdfs[i].pdfUrl) {
+            const myCloudPdf = await cloudinary.v2.uploader.upload(
+              data.courseData[0].pdfs[i].pdfUrl,
+              {
+                folder: "pdfs",
+                resource_type: "raw",
+              }
+            );
+
+            data.courseData[0].pdfs[i].pdfUrl = myCloudPdf.secure_url;
+          }
+        }
       }
 
       // Upload quiz thumbnails
@@ -54,6 +70,7 @@ export const uploadCourse = CatchAsyncError(
     }
   }
 );
+
 
 // edit course
 export const editCourse = CatchAsyncError(
